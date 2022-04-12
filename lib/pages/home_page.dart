@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:math';
 
 class HomePage extends StatefulWidget {
   @override
@@ -7,7 +8,9 @@ class HomePage extends StatefulWidget {
   }
 }
 
-class _HomePageState extends State<HomePage> {
+//this with thing for passing our class in vsync in animation controller
+class _HomePageState extends State<HomePage>
+    with SingleTickerProviderStateMixin {
   double _buttonRadius = 100; //initially
 
   //basically will go from 0% to 100%
@@ -15,6 +18,22 @@ class _HomePageState extends State<HomePage> {
   //a tween is also used for animation
   //this tween is of double data type as its start and end value are of type double
   //tween maps all the values between this start and end and go over them
+
+  AnimationController? _startIconAnimationController;
+  //controls animation
+
+  @override
+  void initState() {
+    //this is used to initialise something in our class
+    super.initState();
+    _startIconAnimationController = AnimationController(
+        vsync: this,
+        duration: const Duration(seconds: 4)); //pass our class in vsync
+    //vsync allows us to avoid repeated use of class resources and make animation more resource-efficient
+    _startIconAnimationController!.repeat(); //to start the animation , once the page loads
+    //repeat to keep running the animation
+    //.forward() to just run the animation once
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +44,15 @@ class _HomePageState extends State<HomePage> {
               Clip.none, //Act of restricting the rendering to a particular area
           children: [
             _pageBackground(), //for background color
-            _circularAnimationButton(),
+            Column(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              mainAxisSize: MainAxisSize.max,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                _circularAnimationButton(),
+                _starIcon(),
+              ],
+            )
           ],
         ),
       ),
@@ -93,5 +120,25 @@ class _HomePageState extends State<HomePage> {
               ),
               //a centered text inside the button
             )));
+  }
+
+  Widget _starIcon() {
+    return AnimatedBuilder(
+      //takes in an animation , a builder and child on which animation is going to take place
+      animation: _startIconAnimationController!.view, //ignore null safety
+      builder: (_buildContext, _child) {
+        //_child -> just our child that is icon(star)
+        return Transform.rotate(
+            angle: _startIconAnimationController!.value * 2 * pi,
+            child: _child);
+        //converting degrees into radian -> import math to use pi
+      }, //builder function is called whenever our animation changes
+      child: const Icon(
+        //a star icon
+        Icons.star,
+        size: 100,
+        color: Colors.white,
+      ),
+    );
   }
 }
